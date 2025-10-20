@@ -1,0 +1,65 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Кастомные стили для улучшения внешнего вида */
+@layer components {
+    .menu-item-base {
+        @apply w-full text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-all duration-200;
+    }
+
+    .menu-item-normal {
+        @apply px-4 py-3 text-gray-700 hover:bg-gray-100;
+    }
+
+    .menu-item-selected {
+        @apply px-4 py-3 bg-blue-50 text-blue-700;
+    }
+
+    .menu-icon-base {
+        @apply flex-shrink-0 transition-colors duration-200;
+    }
+
+    .content-card {
+        @apply bg-white rounded-2xl shadow-lg border border-gray-200 p-6;
+    }
+
+    .stats-card {
+        @apply bg-white rounded-xl shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200;
+    }
+}
+
+/* Анимации для плавных переходов */
+.sidebar-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+/* Кастомные scrollbar стили */
+.scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
