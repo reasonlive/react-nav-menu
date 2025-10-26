@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect } from 'react';
+import {FC, ReactNode, useCallback, useEffect, useMemo} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SideMenu, MenuItem, useSideMenuState, ToggleButtonProps } from './components/SideMenu';
 import {
@@ -17,8 +17,8 @@ const StyledSideMenu: FC = () => {
     const navigate = useNavigate();
     const { activeItemId, setActiveItemId, collapsed, toggleCollapse } = useSideMenuState();
 
-    // Маппинг путей
-    const routeMap: { [key: string]: string } = {
+    // useMemo для статичного маппинга
+    const routeMap: any = useMemo(() => ({
         '/': 'dashboard',
         '/analytics': 'analytics',
         '/analytics/indicators': 'analytics-indicators',
@@ -26,10 +26,10 @@ const StyledSideMenu: FC = () => {
         '/users': 'users',
         '/documents': 'documents',
         '/settings': 'settings',
-    };
+    }), []); // Пустой массив зависимостей - объект создается один раз
 
     // Обработчик клика по пункту меню
-    const handleItemClick = (itemId: string) => {
+    const handleItemClick = useCallback((itemId: string) => {
         setActiveItemId(itemId);
 
         // Находим путь по ID
@@ -37,15 +37,15 @@ const StyledSideMenu: FC = () => {
         if (path) {
             navigate(path);
         }
-    };
+    }, [setActiveItemId, navigate, routeMap]);
 
     // Синхронизация активного пункта меню с текущим путем
     useEffect(() => {
-        const activeId = routeMap[location.pathname];
+        const activeId = routeMap[location.pathname] as string;
         if (activeId && activeId !== activeItemId) {
             setActiveItemId(activeId);
         }
-    }, [location.pathname]);
+    }, [location.pathname, activeItemId, setActiveItemId, routeMap]);
 
     const customToggleButton = ({ collapsed, onToggle }: ToggleButtonProps) => (
         <button
