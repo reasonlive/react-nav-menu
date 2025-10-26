@@ -1,52 +1,29 @@
-export const toggleButtonClasses: string = `
-    p-2
-    focus:outline-none
-    focus:ring-2
-    focus:ring-blue-500
-    rounded-md
-    transition-colors
-    duration-200
-    hover:bg-gray-100`;
-
-export const menuHeaderClasses: string = `
+export const menuItemClasses = (isActive: boolean, collapsed?: boolean, disabled: boolean = false) => `
     flex
     items-center
-    justify-between
-    p-6
-    border-b
-    border-gray-200
-    bg-gradient-to-r
-    from-blue-600
-    to-blue-700`;
-
-export const menuItemsClasses: string = `
-    py-3
-    w-full
-    text-left
-    
-    hover:bg-blue-50
-    hover:shadow-md
-    
-    focus:outline-none
-    focus:ring-2
-    focus:ring-inset
-    focus:ring-blue-500
-    
-    border
-    border-transparent
-    hover:border-blue-200
-    
+    px-3
+    py-2
     rounded-lg
-    
-    transition-all
-    duration-200`;
+    transition-colors
+    cursor-pointer
+    select-none
+    ${isActive
+    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600'
+    : 'text-gray-700 hover:bg-gray-100'}
+    ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+    ${collapsed ? 'justify-center px-3' : ''}
+`;
 
-export const navigationPanelClasses: string = `
-    bg-white
-    shadow-xl
-    border-r
-    border-gray-200
-    transition-all
-    duration-300
-    flex
-    flex-col`;
+export const toggleButtonClasses = `
+        w-full
+        flex
+        items-center
+        justify-center
+        p-2
+        text-gray-600
+        hover:bg-gray-100 
+        rounded-lg
+        transition-colors
+        border-t
+        border-gray-200
+    `;

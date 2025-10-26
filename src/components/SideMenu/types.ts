@@ -1,59 +1,42 @@
-import {ComponentType, ReactNode} from "react";
+import {ReactNode} from "react";
 
-export interface MenuItemProps {
-    /** Уникальный идентификатор элемента меню */
-    id: string;
-    /** Иконка элемента меню (React компонент) */
-    icon?: ComponentType<{ className?: string }>;
-    /** Текст элемента меню */
-    label: string;
-    /** Путь для навигации */
-    path: string;
-    /** Цвет иконки */
-    color: string;
-    /** Размер иконки (классы Tailwind) */
-    iconSize?: string;
-    /** Дочерние элементы меню (для вложенных меню) */
-    children?: MenuItemProps[];
-    /** Дополнительные данные для кастомного использования */
-    metadata?: Record<string, any>;
+export interface SideMenuProps {
+    children: ReactNode;
+    activeItemId?: string;
+    onItemClick?: (itemId: string) => void;
+    className?: string;
+    collapsed?: boolean;
+    onCollapseChange?: (collapsed: boolean) => void;
+    renderToggleButton?: (props: ToggleButtonProps) => ReactNode;
 }
 
-export interface MenuItemComponentProps {
-    /** Элемент меню */
-    item: MenuItemProps;
-    /** Уровень вложенности */
-    level?: number;
-    /** Колбэк при выборе элемента */
-    onSelect?: (item: MenuItemProps) => void;
-    /** Дополнительные классы для контейнера */
+export interface MenuItemProps {
+    id: string;
+    label: string;
+    disabled?: boolean;
+    children?: ReactNode;
+    icon?: ReactNode;
     className?: string;
 }
 
-export interface SideMenuContextType {
-    /** Текущий выбранный элемент меню */
-    selectedItem: MenuItemProps | null;
-    /** Функция для выбора элемента меню */
-    setSelectedItem: (item: MenuItemProps | null) => void;
-    /** Состояние свернутого меню */
-    isCollapsed: boolean;
-    /** Функция для переключения состояния свернутого меню */
-    toggleCollapsed: () => void;
-    /** Состояние мобильного меню */
-    isMobileOpen: boolean;
-    /** Функция для переключения мобильного меню */
-    toggleMobile: () => void;
-    /** Определяет мобильный режим */
-    isMobile: boolean;
+export interface ToggleButtonProps {
+    collapsed: boolean;
+    onToggle: () => void;
 }
 
-export interface SideMenuProps {
-    /** Дочерние элементы меню */
-    children: ReactNode;
-    /** Начальное состояние свернутого меню */
-    defaultCollapsed?: boolean;
-    /** Колбэк при изменении состояния свернутого меню */
-    onCollapseChange?: (collapsed: boolean) => void;
-    /** Брейкпоинт для мобильной версии */
-    mobileBreakpoint?: number;
+export interface SideMenuContextType {
+    activeItemId?: string;
+    onItemClick: (itemId: string) => void;
+    collapsed: boolean;
+}
+
+export interface RenderItemProps {
+    item: Omit<MenuItemProps, 'children'>;
+    isActive: boolean;
+    isExpanded: boolean;
+    hasChildren: boolean;
+    level: number;
+    onItemClick: () => void;
+    onToggleExpand: () => void;
+    collapsed: boolean;
 }

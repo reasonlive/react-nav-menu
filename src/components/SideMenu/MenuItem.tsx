@@ -1,118 +1,154 @@
-import { FC } from 'react';
-import { useSideMenu } from './SideMenuContext';
-import { MenuItemComponentProps } from './types';
+import {FC, Children, MouseEvent, useState, useRef} from 'react';
+import { MenuItemProps } from './types';
+import { useSideMenu } from './hooks';
 
-export const MenuItem: FC<MenuItemComponentProps> = ({
-     item,
-     level = 0,
-     onSelect,
-     className = ''
- }) => {
-    const { selectedItem, setSelectedItem, isCollapsed, isMobile } = useSideMenu();
-    const isSelected = selectedItem === item;
+export const MenuItem: FC<MenuItemProps> = ({
+    id,
+    label,
+    disabled = false,
+    children,
+    icon,
+    className = ''
+}) => {
+    const { activeItemId, onItemClick, collapsed } = useSideMenu();
+    const menuItemRef = useRef<HTMLLIElement>(null);
 
-    const handleClick = (e: any) => {
-        setSelectedItem(item);
-        // Вызываем кастомный обработчик если он передан
-        if (onSelect) {
-            onSelect(item);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [showTooltip, setShowTooltip] = useState(false);
+    const hasChildren = Children.count(children) > 0;
+    const isActive = activeItemId === id;
+
+    const handleItemClick = () => {
+        if (disabled) return;
+
+        if (hasChildren) {
+            if (!collapsed) {
+                setIsExpanded(!isExpanded);
+            }
+            onItemClick(id);
+        } else {
+            onItemClick(id);
         }
     };
 
-    // Вычисляем отступ для вложенных элементов
-    const paddingLeft: string = isCollapsed ? ' px-3' : ` px-${Math.min(3 + level * 2, 8)}`;
-    // меняем цвет выбранного элемента
-    const selectedStyle: string = isSelected ? ' bg-blue-50 text-blue-700' : ' text-gray-700 hover:bg-gray-100';
-    const labelClass = 'flex-1 truncate transition-colors duration-200';
+    const handleToggleExpand = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (disabled) return;
+        setIsExpanded(!isExpanded);
+    };
+
+    const handleMouseEnter = () => {
+        if (collapsed) {
+            setShowTooltip(true);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (collapsed) {
+            setShowTooltip(false);
+        }
+    };
+
+    // Получаем позицию для тултипа
+    const getTooltipPosition = () => {
+        if (!menuItemRef.current) return { left: 0, top: 0 };
+
+        const rect = menuItemRef.current.getBoundingClientRect();
+        return {
+            left: rect.right,
+            top: rect.top
+        };
+    };
 
     return (
-        <div role="none">
-            <button
-                role="menuitem"
-                aria-haspopup={!!item.children?.length}
-                aria-expanded={isSelected && !!item.children?.length}
-                onClick={handleClick}
-                className={`${className}${paddingLeft}${selectedStyle}`}
-                title={isCollapsed ? item.label : undefined}
+        <>
+            <li
+                ref={menuItemRef}
+                role="none"
+                className={className}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
-                <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'}`}>
-                    {item.icon && (
-                        <item.icon className={`
-                        flex-shrink-0 transition-colors duration-200
-                        ${item.iconSize}
-                        ${item.color}
-                        ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}/>
-                    )}
-
-                    {!isCollapsed  && (<span className={labelClass}>{item.label}</span>)}
-                    {isCollapsed && level > 0 && (<span className={labelClass}>{item.label}</span>)}
-                </div>
-            </button>
-
-            {/* Рендерим дочерние элементы */}
-            {item.children?.length && isSelected && !isCollapsed && (
-                <ul role="menu" aria-label={item.label}>
-                    {item.children.map((child) => (
-                        <li key={child.id}>
-                            <MenuItem
-                                key={child.id}
-                                item={child}
-                                level={1}
-                                onSelect={onSelect}
-                                className={className + ' text-right'}
-                            />
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            {/* Рендерим дочерние элементы при закрытом меню*/}
-            {item.children?.length && isSelected && isCollapsed && (
-                <div className={`fixed left-20 ${isMobile ? 'top-4 left-40' : 'top-40'} z-50 ml-2 mt-2`}>
-                    {/* Стрелка-указатель */}
-                    <div
-                        className="absolute
-                        -left-2
-                        top-4
-                        w-4
-                        h-4
-                        bg-white
-                        border-l
-                        border-t
-                        border-gray-200
-                        transform
-                        rotate-45"
-                    ></div>
-
-                    {/* Контейнер подменю */}
-                    <div
-                        className="bg-white
-                        rounded-lg
-                        shadow-xl
-                        border
-                        border-gray-200
-                        min-w-48
-                        py-2
-                        backdrop-blur-sm"
-                    >
-
-                        {/* Список дочерних элементов */}
-                        <ul role="menu">
-                            {item.children.map((child) => (
-                                <li key={child.id}>
-                                    <MenuItem
-                                        key={child.id}
-                                        item={child}
-                                        level={1}
-                                        onSelect={onSelect}
-                                        className={className}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
+                <div
+                    role="menuitem"
+                    aria-current={isActive ? 'page' : undefined}
+                    aria-expanded={hasChildren ? isExpanded : undefined}
+                    aria-disabled={disabled}
+                    tabIndex={disabled ? -1 : 0}
+                    onClick={handleItemClick}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleItemClick();
+                        }
+                    }}
+                    className="flex items-center justify-between w-full"
+                >
+                    <div className="flex items-center">
+                        {icon}
+                        {!collapsed && <span className="ml-2">{label}</span>}
                     </div>
+                    {hasChildren && !collapsed && (
+                        <button
+                            onClick={handleToggleExpand}
+                            disabled={disabled}
+                        >
+                        </button>
+                    )}
+                </div>
+            </li>
+
+            {/* Тултип для свернутого меню */}
+            {collapsed && showTooltip && (
+                <div
+                    className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg"
+                    style={getTooltipPosition()}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    {!hasChildren ? (
+                        // Простой тултип с названием для элементов без детей
+                        <div className="px-4 py-2 text-sm font-medium text-gray-800 whitespace-nowrap">
+                            {label}
+                        </div>
+                    ) : (
+                        // Подменю с вложенными элементами
+                        <div className="min-w-48">
+                            <div className="font-medium text-gray-800 px-4 py-2 border-b border-gray-100">
+                                {label}
+                            </div>
+                            <div className="py-1">
+                                {Children.map(children, (child) => {
+                                    if (!child) return null;
+
+                                    const childElement = child as any;
+                                    return (
+                                        <div
+                                            className={childElement.props.className}
+                                            //className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors cursor-pointer text-sm"
+                                            onClick={() => {
+                                                if (childElement.props && childElement.props.id) {
+                                                    onItemClick(childElement.props.id);
+                                                    setShowTooltip(false);
+                                                }
+                                            }}
+                                        >
+                                            {childElement.props.label}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
-        </div>
+
+            {/* Обычное отображение вложенных элементов в развернутом состоянии */}
+            {!collapsed && hasChildren && isExpanded && (
+                <div className="ml-4 border-l border-gray-200">
+                    {children}
+                </div>
+            )}
+        </>
     );
 };
